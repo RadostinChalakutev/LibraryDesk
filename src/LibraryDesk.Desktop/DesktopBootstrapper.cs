@@ -43,6 +43,13 @@ internal static class DesktopBootstrapper
         services.AddApplication();
         services.AddInfrastructure(Configuration.Value);
         services.AddTransient<MainWindowViewModel>();
+        services.AddTransient<DashboardPageViewModel>();
+        services.AddTransient<ReaderPageViewModel>();
+        services.AddTransient<BookPageViewModel>();
+        services.AddTransient<LoanPageViewModel>();
+        services.AddTransient<OverduePageViewModel>();
+        services.AddTransient<ReportsPageViewModel>();
+        services.AddTransient<AdministrationPageViewModel>();
         services.AddTransient<LoginWindowViewModel>();
         services.AddTransient<InitialAdministratorSetupViewModel>();
         return services.BuildServiceProvider(validateScopes: true);

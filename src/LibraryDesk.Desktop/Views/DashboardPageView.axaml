@@ -1,0 +1,19 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="LibraryDesk.Desktop.Views.DashboardPageView">
+  <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="16">
+    <StackPanel Orientation="Horizontal" Spacing="8">
+      <TextBlock Text="Library overview" FontSize="22" FontWeight="SemiBold" VerticalAlignment="Center" />
+      <Button Content="Refresh" Command="{Binding RefreshCommand}" />
+    </StackPanel>
+    <TextBlock Grid.Row="1" Text="{Binding StatusMessage}" Foreground="#526173" />
+    <Grid Grid.Row="2" ColumnDefinitions="*,*,*" RowDefinitions="Auto,Auto" ColumnSpacing="16" RowSpacing="16">
+      <Border Padding="18" Background="#F4F6F9" CornerRadius="8"><StackPanel><TextBlock Text="Active readers" /><TextBlock Text="{Binding Summary.ActiveReaders}" FontSize="30" FontWeight="Bold" /></StackPanel></Border>
+      <Border Grid.Column="1" Padding="18" Background="#F4F6F9" CornerRadius="8"><StackPanel><TextBlock Text="Catalog books" /><TextBlock Text="{Binding Summary.CatalogBooks}" FontSize="30" FontWeight="Bold" /></StackPanel></Border>
+      <Border Grid.Column="2" Padding="18" Background="#F4F6F9" CornerRadius="8"><StackPanel><TextBlock Text="Available copies" /><TextBlock Text="{Binding Summary.AvailableCopies}" FontSize="30" FontWeight="Bold" /></StackPanel></Border>
+      <Border Grid.Row="1" Padding="18" Background="#F4F6F9" CornerRadius="8"><StackPanel><TextBlock Text="Total copies" /><TextBlock Text="{Binding Summary.TotalCopies}" FontSize="30" FontWeight="Bold" /></StackPanel></Border>
+      <Border Grid.Row="1" Grid.Column="1" Padding="18" Background="#F4F6F9" CornerRadius="8"><StackPanel><TextBlock Text="Active loans" /><TextBlock Text="{Binding Summary.ActiveLoans}" FontSize="30" FontWeight="Bold" /></StackPanel></Border>
+      <Border Grid.Row="1" Grid.Column="2" Padding="18" Background="#FFF4CE" CornerRadius="8"><StackPanel><TextBlock Text="Overdue loans" /><TextBlock Text="{Binding Summary.OverdueLoans}" FontSize="30" FontWeight="Bold" Foreground="#A4262C" /></StackPanel></Border>
+    </Grid>
+  </Grid>
+</UserControl>

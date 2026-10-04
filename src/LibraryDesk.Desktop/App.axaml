@@ -5,8 +5,29 @@
              x:Class="LibraryDesk.Desktop.App"
              RequestedThemeVariant="Default">
   <Application.DataTemplates>
+    <DataTemplate DataType="{x:Type viewModels:DashboardPageViewModel}">
+      <views:DashboardPageView />
+    </DataTemplate>
     <DataTemplate DataType="{x:Type viewModels:PlaceholderPageViewModel}">
       <views:PlaceholderPageView />
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type viewModels:ReaderPageViewModel}">
+      <views:ReaderPageView />
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type viewModels:BookPageViewModel}">
+      <views:BookPageView />
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type viewModels:LoanPageViewModel}">
+      <views:LoanPageView />
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type viewModels:OverduePageViewModel}">
+      <views:OverduePageView />
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type viewModels:ReportsPageViewModel}">
+      <views:ReportsPageView />
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type viewModels:AdministrationPageViewModel}">
+      <views:AdministrationPageView />
     </DataTemplate>
   </Application.DataTemplates>
   <Application.Styles>

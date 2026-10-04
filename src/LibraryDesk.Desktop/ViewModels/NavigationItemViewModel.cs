@@ -2,7 +2,7 @@ namespace LibraryDesk.Desktop.ViewModels;
 
 public sealed class NavigationItemViewModel
 {
-    public NavigationItemViewModel(string title, PlaceholderPageViewModel page)
+    public NavigationItemViewModel(string title, ViewModelBase page)
     {
         Title = title;
         Page = page;
@@ -10,5 +10,5 @@ public sealed class NavigationItemViewModel
 
     public string Title { get; }
 
-    public PlaceholderPageViewModel Page { get; }
+    public ViewModelBase Page { get; }
 }

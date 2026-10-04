@@ -49,4 +49,6 @@ internal sealed class UserAccount
     public DateTimeOffset? LastSignedInAtUtc { get; private set; }
 
     public void RecordSuccessfulSignIn(DateTimeOffset signedInAtUtc) => LastSignedInAtUtc = signedInAtUtc;
+
+    public void SetActive(bool isActive) => IsActive = isActive;
 }

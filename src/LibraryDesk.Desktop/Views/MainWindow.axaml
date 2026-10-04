@@ -28,7 +28,7 @@
     </Border>
     <Grid Grid.Column="1" RowDefinitions="Auto,*" Margin="32">
       <Grid ColumnDefinitions="*,Auto">
-        <TextBlock Text="{Binding CurrentPage.Title}" FontSize="28" FontWeight="SemiBold" />
+        <TextBlock Text="{Binding SelectedNavigationItem.Title}" FontSize="28" FontWeight="SemiBold" />
         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
           <TextBlock Text="{Binding CurrentUserDisplayName}" FontWeight="SemiBold" />
           <TextBlock Text="{Binding CurrentUserRole}" Foreground="#526173" />

@@ -17,6 +17,149 @@ namespace LibraryDesk.Infrastructure.Persistence.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.11");
 
+            modelBuilder.Entity("LibraryDesk.Domain.Books.Book", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Author")
+                        .IsRequired()
+                        .HasMaxLength(160)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Category")
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Isbn")
+                        .HasMaxLength(32)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("PublishedYear")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(240)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Isbn")
+                        .IsUnique();
+
+                    b.ToTable("books", (string)null);
+                });
+
+            modelBuilder.Entity("LibraryDesk.Domain.Books.PhysicalCopy", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Barcode")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("BookId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Barcode")
+                        .IsUnique();
+
+                    b.HasIndex("BookId");
+
+                    b.ToTable("physical_copies", (string)null);
+                });
+
+            modelBuilder.Entity("LibraryDesk.Domain.Loans.Loan", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateOnly>("BorrowedOn")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateOnly>("DueOn")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("PhysicalCopyId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("ReaderId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateOnly?>("ReturnedOn")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PhysicalCopyId")
+                        .IsUnique()
+                        .HasFilter("\"ReturnedOn\" IS NULL");
+
+                    b.HasIndex("ReaderId");
+
+                    b.ToTable("loans", (string)null);
+                });
+
+            modelBuilder.Entity("LibraryDesk.Domain.Readers.Reader", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(256)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasMaxLength(160)
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("MembershipNumber")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Phone")
+                        .HasMaxLength(64)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MembershipNumber")
+                        .IsUnique();
+
+                    b.ToTable("readers", (string)null);
+                });
+
             modelBuilder.Entity("LibraryDesk.Infrastructure.Persistence.Models.ApplicationMetadata", b =>
                 {
                     b.Property<string>("Key")
@@ -84,6 +227,35 @@ namespace LibraryDesk.Infrastructure.Persistence.Migrations
                         .IsUnique();
 
                     b.ToTable("user_accounts", (string)null);
+                });
+
+            modelBuilder.Entity("LibraryDesk.Domain.Books.PhysicalCopy", b =>
+                {
+                    b.HasOne("LibraryDesk.Domain.Books.Book", null)
+                        .WithMany("Copies")
+                        .HasForeignKey("BookId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("LibraryDesk.Domain.Loans.Loan", b =>
+                {
+                    b.HasOne("LibraryDesk.Domain.Books.PhysicalCopy", null)
+                        .WithMany()
+                        .HasForeignKey("PhysicalCopyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("LibraryDesk.Domain.Readers.Reader", null)
+                        .WithMany()
+                        .HasForeignKey("ReaderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("LibraryDesk.Domain.Books.Book", b =>
+                {
+                    b.Navigation("Copies");
                 });
 #pragma warning restore 612, 618
         }

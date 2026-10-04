@@ -8,10 +8,19 @@ namespace LibraryDesk.Desktop.ViewModels;
 public sealed class MainWindowViewModel : ViewModelBase
 {
     private NavigationItemViewModel? _selectedNavigationItem;
-    private PlaceholderPageViewModel _currentPage;
+    private ViewModelBase _currentPage;
     private readonly IUserSession _userSession;
 
-    public MainWindowViewModel(IClock clock, IUserSession userSession)
+    public MainWindowViewModel(
+        IClock clock,
+        IUserSession userSession,
+        DashboardPageViewModel dashboardPage,
+        ReaderPageViewModel readerPage,
+        BookPageViewModel bookPage,
+        LoanPageViewModel loanPage,
+        OverduePageViewModel overduePage,
+        ReportsPageViewModel reportsPage,
+        AdministrationPageViewModel administrationPage)
     {
         ArgumentNullException.ThrowIfNull(clock);
         _userSession = userSession ?? throw new ArgumentNullException(nameof(userSession));
@@ -22,13 +31,13 @@ public sealed class MainWindowViewModel : ViewModelBase
         }
 
         NavigationItems = new ObservableCollection<NavigationItemViewModel>();
-        AddItemIfAllowed(Capability.ViewDashboard, "Dashboard", "A concise operational overview will be added in Phase 8.");
-        AddItemIfAllowed(Capability.ManageReaders, "Readers", "Reader management will be added in Phase 4.");
-        AddItemIfAllowed(Capability.ManageBooks, "Books", "Books and physical copies will be added in Phase 5.");
-        AddItemIfAllowed(Capability.ManageLoans, "Loans", "Borrowing and returns will be added in Phase 6.");
-        AddItemIfAllowed(Capability.ViewOverdue, "Overdue", "Overdue tracking will be added in Phase 7.");
-        AddItemIfAllowed(Capability.ViewReports, "Reports", "Reports will be added in Phase 9.");
-        AddItemIfAllowed(Capability.ManageSettings, "Settings", "Administration and backup will be added in Phase 10.");
+        AddItemIfAllowed(Capability.ViewDashboard, "Dashboard", dashboardPage);
+        AddItemIfAllowed(Capability.ManageReaders, "Readers", readerPage);
+        AddItemIfAllowed(Capability.ManageBooks, "Books", bookPage);
+        AddItemIfAllowed(Capability.ManageLoans, "Loans", loanPage);
+        AddItemIfAllowed(Capability.ViewOverdue, "Overdue", overduePage);
+        AddItemIfAllowed(Capability.ViewReports, "Reports", reportsPage);
+        AddItemIfAllowed(Capability.ManageSettings, "Settings", administrationPage);
 
         _selectedNavigationItem = NavigationItems[0];
         _currentPage = _selectedNavigationItem.Page;
@@ -60,7 +69,7 @@ public sealed class MainWindowViewModel : ViewModelBase
         }
     }
 
-    public PlaceholderPageViewModel CurrentPage
+    public ViewModelBase CurrentPage
     {
         get => _currentPage;
         private set => SetProperty(ref _currentPage, value);
@@ -69,11 +78,21 @@ public sealed class MainWindowViewModel : ViewModelBase
     private static NavigationItemViewModel CreateItem(string title, string description) =>
         new(title, new PlaceholderPageViewModel(title, description));
 
+    private static NavigationItemViewModel CreateItem(string title, ViewModelBase page) => new(title, page);
+
     private void AddItemIfAllowed(Capability capability, string title, string description)
     {
         if (_userSession.HasPermission(capability))
         {
             NavigationItems.Add(CreateItem(title, description));
+        }
+    }
+
+    private void AddItemIfAllowed(Capability capability, string title, ViewModelBase page)
+    {
+        if (_userSession.HasPermission(capability))
+        {
+            NavigationItems.Add(CreateItem(title, page));
         }
     }
 

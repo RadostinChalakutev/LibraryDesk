@@ -2,32 +2,34 @@
 
 ## Commands
 
-Run these commands from the repository root:
+Run commands from the repository root:
 
 ```powershell
 dotnet restore LibraryDesk.sln
 dotnet build LibraryDesk.sln --configuration Debug
 dotnet test LibraryDesk.sln --configuration Debug --no-build
-dotnet run --project src/LibraryDesk.Desktop/LibraryDesk.Desktop.csproj
+dotnet publish src/LibraryDesk.Desktop/LibraryDesk.Desktop.csproj --configuration Release --runtime win-x64 --self-contained true --output release
 ```
 
-For a Windows x64 release build:
+To run against a disposable local database:
 
 ```powershell
-dotnet publish src/LibraryDesk.Desktop/LibraryDesk.Desktop.csproj --configuration Release --runtime win-x64 --self-contained false --output release
+$env:LIBRARYDESK_Database__FilePath = "$PWD\\local-data\\LibraryDesk.db"
+dotnet run --project src/LibraryDesk.Desktop/LibraryDesk.Desktop.csproj --configuration Debug
 ```
 
 ## Conventions
 
-- Treat warnings as errors. Keep nullable annotations correct.
-- Keep business rules in Domain or Application, never in Avalonia views or code-behind.
-- Register cross-layer implementations through each layer's `Add…` extension method. The Desktop project remains the only composition root.
-- Keep database and filesystem access in Infrastructure. Apply all schema changes through EF Core migrations; do not call `EnsureCreated` in application code.
-- Add tests in the test project corresponding to the layer under test. Tests must not depend on the Avalonia desktop UI unless a later phase requires dedicated UI testing.
+- Treat warnings as errors and preserve nullable correctness.
+- Keep domain rules out of Avalonia code-behind and database operations out of view models.
+- Add an Application interface/DTO before adding an Infrastructure implementation.
+- Register implementations in `AddApplication` or `AddInfrastructure`; the Desktop project is the only composition root.
+- Keep the Domain project free of UI, EF Core, filesystem, and Infrastructure dependencies.
+- Prefer an integration test against temporary SQLite for persisted workflow behavior. Always clear SQLite pools before deleting a temporary test database.
 
 ## Database migrations
 
-The repository uses the local `dotnet-ef` tool manifest. Restore it before creating or inspecting migrations:
+The repository has a local `dotnet-ef` tool manifest. Restore it before creating or inspecting migrations:
 
 ```powershell
 dotnet tool restore
@@ -35,8 +37,17 @@ dotnet ef migrations add MeaningfulMigrationName --project src/LibraryDesk.Infra
 dotnet ef database update --project src/LibraryDesk.Infrastructure --startup-project src/LibraryDesk.Desktop --context LibraryDeskDbContext
 ```
 
-The desktop app applies migrations automatically during startup. In normal development, use a separate configured `Database:FilePath` when you need an isolated database.
+Do not use `EnsureCreated` in application code and do not modify an applied migration. Add a new migration for every persisted schema change. The desktop client runs pending migrations at startup.
 
-## Current boundaries
+## Configuration and files
 
-The project deliberately does not yet include readers, titles, physical copies, borrowing, reporting, backup, or synchronization. It now supports local authentication with initial-administrator setup, administrator/librarian roles, sign-in, sign-out, and capability checks. Account management beyond initial setup is deferred to Phase 10. Feature pages remain transparent placeholders until their assigned phases.
+- `src/LibraryDesk.Desktop/appsettings.json` is copied to the desktop output.
+- Environment variables with the `LIBRARYDESK_` prefix override configuration, for example `LIBRARYDESK_Logging__MinimumLevel=Debug`.
+- Default application data: `%LocalAppData%\\LibraryDesk\\LibraryDesk.db`.
+- Logs: `%LocalAppData%\\LibraryDesk\\logs`.
+- User-generated CSV reports: `%UserProfile%\\Documents\\LibraryDesk\\reports`.
+- User-generated backups: `%UserProfile%\\Documents\\LibraryDesk\\backups`.
+
+## Quality checks
+
+Before submitting a change, run restore, a Release build, and the full test suite. Review `git diff --check` and use `dotnet list LibraryDesk.sln package --vulnerable --include-transitive` to inspect known package vulnerabilities. The test suite covers domain invariants, session permissions, database initialization, local authentication, reader records, catalogue/copy creation, transactional loans/returns/history, overdue detection, dashboard counts, CSV export, administrator authorization, and SQLite backup readability.

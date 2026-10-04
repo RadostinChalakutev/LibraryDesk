@@ -1,35 +1,66 @@
 # Architecture
 
-## Overview
+## Dependency direction
 
-LibraryDesk uses a small Clean Architecture arrangement. Dependencies point inward:
+LibraryDesk uses a compact Clean Architecture arrangement. Project dependencies point inward:
 
 ```text
-Desktop -> Infrastructure -> Application -> Domain
-                 \---------------> Domain
+Desktop ──────► Application ──────► Domain
+  │                    ▲
+  └────► Infrastructure ┘
+                 │
+                 └───────────────► Domain
 ```
 
-The Desktop project also references Application so that it can compose application abstractions at its startup boundary. Domain never references another LibraryDesk project. Application references only Domain. Infrastructure supplies implementations for abstractions owned by Application.
+`LibraryDesk.Domain` has no dependency on another LibraryDesk project. `LibraryDesk.Application` contains contracts and DTOs and depends only on Domain. `LibraryDesk.Infrastructure` implements application contracts and owns EF Core, SQLite, filesystem reporting/backups, and migrations. `LibraryDesk.Desktop` contains Avalonia views, MVVM view models, and the single composition root.
 
-## Layer responsibilities
+## Responsibilities
 
-- **Domain** holds dependency-free business concepts and invariants. It currently establishes a reusable date-range primitive; business entities are intentionally deferred.
-- **Application** owns use-case contracts, application-level primitives, authentication requests/results, and in-memory desktop session state. It has no UI or persistence code.
-- **Infrastructure** implements application contracts for external concerns. It provides the system clock, SQLite connection resolution, EF Core context, migrations, idempotent database initialization, persisted local accounts, and PBKDF2 password hashing.
-- **Desktop** is the Avalonia presentation layer and composition root. It builds configuration, logging and the DI container, applies database migrations, then selects initial administrator setup or sign-in before opening the main shell.
+- **Domain** contains readers, books, physical-copy state, loans, roles, capabilities, and their invariants. For example, a non-available copy cannot be lent and a loan cannot be returned twice.
+- **Application** contains use-case interfaces and records: readers, catalogue, circulation, dashboard, reports, account administration, backups, authentication, and `IUserSession`. It has no SQL, filesystem, or Avalonia types.
+- **Infrastructure** implements those interfaces using EF Core/SQLite. It owns `LibraryDeskDbContext`, schema migrations, PBKDF2 password hashing, transactional lending, report files, and SQLite online backups.
+- **Desktop** binds views to view models. It never uses `DbContext` directly; all business work passes through Application interfaces registered by `DesktopBootstrapper`.
+
+## Workflow and persistence
+
+The core workflow persists this relationship:
+
+```text
+Reader 1 ──< Loan >── 1 PhysicalCopy >── 1 Book
+```
+
+Each physical copy has a globally unique barcode and status. A filtered unique SQLite index allows at most one active loan for a physical copy. Borrowing and returning update both the loan record and physical-copy state in a database transaction. Returned loans remain immutable history.
+
+The local database is `%LocalAppData%\\LibraryDesk\\LibraryDesk.db` by default. `Database:FilePath` configuration, or its `LIBRARYDESK_Database__FilePath` environment-variable form, can select a different path. `IDatabaseInitializer` applies EF Core migrations at startup; it does not seed real library records.
+
+Current EF Core migrations are:
+
+- `InitialInfrastructure` — metadata table.
+- `AddAuthentication` — local user accounts.
+- `AddReaders` — reader records.
+- `AddBooksAndCopies` — catalogue titles and physical copies.
+- `AddLoans` — circulation history and active-loan index.
+
+## Authentication and authorization
+
+The initial setup flow atomically creates the first administrator, with no default account. Passwords are verified with PBKDF2-HMAC-SHA512 using 210,000 iterations, a cryptographically random 16-byte salt, and a 32-byte derived key. Plaintext passwords are not persisted.
+
+`UserRole` and `Capability` are Domain concepts. The shell hides unavailable modules, and user-administration services also validate the authenticated administrator role before modifying accounts. Librarians can use operational modules but cannot see or invoke account administration.
 
 ## Presentation model
 
-The UI follows MVVM. Views contain layout and bindings only. `MainWindowViewModel` owns the navigation state; one intentionally non-functional placeholder page view model represents each future feature area. This avoids creating fake reader, book, or lending functionality before the relevant phase.
+Avalonia follows MVVM:
 
-## Cross-cutting concerns
+- XAML views contain bindings and layout only.
+- View models own view state and commands.
+- Application services own workflow calls.
+- `AsyncRelayCommand` prevents a command from running concurrently with itself.
 
-- Nullable references and implicit global usings are enabled project-wide in `Directory.Build.props`.
-- Serilog writes rolling daily logs to `%LocalAppData%\LibraryDesk\logs`.
-- `appsettings.json` is copied to the desktop output and may be overridden with `LIBRARYDESK_`-prefixed environment variables (for example, `LIBRARYDESK_Logging__MinimumLevel=Debug`).
-- SQLite data is stored in `%LocalAppData%\LibraryDesk\LibraryDesk.db` unless `Database:FilePath` is configured. SQLite foreign keys are enabled for every connection.
-- `IDatabaseInitializer` is an Application-owned contract. Its Infrastructure implementation applies EF Core migrations and records the initial database creation time in the system-owned `application_metadata` table. No business data is seeded.
-- First run has no default credentials. The initial setup screen creates the only bootstrap administrator through an atomic metadata record, preventing concurrent first-run setup from creating multiple bootstrap accounts.
-- Passwords are hashed with PBKDF2-HMAC-SHA512 (210,000 iterations), a cryptographically random 16-byte salt, and a 32-byte derived key. Hashes and salts are Base64-encoded for SQLite storage; plaintext passwords are never persisted.
-- `UserRole` and `Capability` are Domain concepts. `IUserSession` stores only the current process identity, and `RolePermissions` is the centralized authorization policy. The desktop shell filters unavailable navigation items and requires an authenticated session before it is created.
-- The desktop project targets `win-x64` and creates a Windows executable host.
+The main shell makes Dashboard, Readers, Books, Loans, Overdue, Reports, and Settings available according to permissions.
+
+## Cross-cutting decisions
+
+- Nullable reference types, implicit usings, current analyzer recommendations, and warnings-as-errors are enabled centrally in `Directory.Build.props`.
+- Serilog creates rolling daily logs in `%LocalAppData%\\LibraryDesk\\logs`.
+- CSV reports quote fields and prefix formula-leading user text with an apostrophe to avoid spreadsheet formula injection.
+- Database backups use SQLite's backup API rather than copying a potentially live `.db` file.
