@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using Serilog.Events;
+using System.Globalization;
 
 namespace LibraryDesk.Desktop;
 
@@ -26,11 +27,11 @@ internal static class DesktopBootstrapper
 
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Is(minimumLevel)
-            .WriteTo.Debug()
             .WriteTo.File(
                 Path.Combine(logDirectory, "librarydesk-.log"),
                 rollingInterval: RollingInterval.Day,
                 retainedFileCountLimit: retainedFileCount,
+                formatProvider: CultureInfo.InvariantCulture,
                 shared: true)
             .CreateLogger();
     }
