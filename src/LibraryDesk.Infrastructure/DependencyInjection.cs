@@ -1,4 +1,6 @@
 using LibraryDesk.Application.Abstractions;
+using LibraryDesk.Application.Authentication;
+using LibraryDesk.Infrastructure.Authentication;
 using LibraryDesk.Infrastructure.Persistence;
 using LibraryDesk.Infrastructure.Time;
 using Microsoft.EntityFrameworkCore;
@@ -21,6 +23,7 @@ public static class DependencyInjection
 
         services.AddSingleton(configuration);
         services.AddSingleton<IClock, SystemClock>();
+        services.AddSingleton<IPasswordHasher, Pbkdf2PasswordHasher>();
         services.AddSingleton<DatabaseConnectionStringProvider>();
         services.AddDbContextFactory<LibraryDeskDbContext>((serviceProvider, options) =>
         {
@@ -28,6 +31,8 @@ public static class DependencyInjection
             options.UseSqlite(connectionStringProvider.ConnectionString);
         });
         services.AddSingleton<IDatabaseInitializer, DatabaseInitializer>();
+        services.AddSingleton<IInitialAdministratorSetupService, InitialAdministratorSetupService>();
+        services.AddSingleton<IAuthenticationService, AuthenticationService>();
         return services;
     }
 }

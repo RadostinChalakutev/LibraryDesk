@@ -40,7 +40,10 @@ public sealed class DatabaseInitializerTests
                 await using var dbContext = await factory.CreateDbContextAsync();
                 var appliedMigrations = await dbContext.Database.GetAppliedMigrationsAsync();
 
-                Assert.Single(appliedMigrations);
+                Assert.Contains(appliedMigrations, migration =>
+                    migration.EndsWith("InitialInfrastructure", StringComparison.Ordinal));
+                Assert.Contains(appliedMigrations, migration =>
+                    migration.EndsWith("AddAuthentication", StringComparison.Ordinal));
 
                 await dbContext.Database.OpenConnectionAsync();
                 try

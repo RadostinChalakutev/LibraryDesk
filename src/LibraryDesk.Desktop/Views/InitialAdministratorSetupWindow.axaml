@@ -1,0 +1,33 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="LibraryDesk.Desktop.Views.InitialAdministratorSetupWindow"
+        Title="Set up LibraryDesk"
+        Width="480"
+        Height="600"
+        CanResize="False"
+        WindowStartupLocation="CenterScreen">
+  <Border Padding="40" Background="#F4F6F9">
+    <StackPanel Spacing="12">
+      <TextBlock Text="Set up LibraryDesk" FontSize="26" FontWeight="SemiBold" />
+      <TextBlock Text="Create the first administrator account for this installation." Foreground="#526173" TextWrapping="Wrap" Margin="0,0,0,12" />
+      <TextBlock Text="Your name" />
+      <TextBox Text="{Binding DisplayName, Mode=TwoWay}" IsEnabled="{Binding IsNotBusy}" />
+      <TextBlock Text="Username" />
+      <TextBox Text="{Binding Username, Mode=TwoWay}" IsEnabled="{Binding IsNotBusy}" />
+      <TextBlock Text="Password" />
+      <TextBox Text="{Binding Password, Mode=TwoWay}" PasswordChar="●" IsEnabled="{Binding IsNotBusy}" />
+      <TextBlock Text="Confirm password" />
+      <TextBox Text="{Binding ConfirmPassword, Mode=TwoWay}" PasswordChar="●" IsEnabled="{Binding IsNotBusy}" />
+      <TextBlock Text="Use at least 12 characters with uppercase, lowercase, and numeric characters."
+                 Foreground="#526173"
+                 FontSize="12"
+                 TextWrapping="Wrap" />
+      <TextBlock Text="{Binding ErrorMessage}" Foreground="#B42318" TextWrapping="Wrap" IsVisible="{Binding HasError}" />
+      <Button Content="Create administrator account"
+              Command="{Binding CreateAccountCommand}"
+              IsEnabled="{Binding IsNotBusy}"
+              HorizontalAlignment="Stretch"
+              Margin="0,12,0,0" />
+    </StackPanel>
+  </Border>
+</Window>

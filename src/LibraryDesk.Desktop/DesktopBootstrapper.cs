@@ -42,7 +42,9 @@ internal static class DesktopBootstrapper
         services.AddSingleton<Serilog.ILogger>(Log.Logger);
         services.AddApplication();
         services.AddInfrastructure(Configuration.Value);
-        services.AddSingleton<MainWindowViewModel>();
+        services.AddTransient<MainWindowViewModel>();
+        services.AddTransient<LoginWindowViewModel>();
+        services.AddTransient<InitialAdministratorSetupViewModel>();
         return services.BuildServiceProvider(validateScopes: true);
     }
 

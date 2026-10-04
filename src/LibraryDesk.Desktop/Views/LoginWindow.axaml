@@ -1,0 +1,21 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="LibraryDesk.Desktop.Views.LoginWindow"
+        Title="Sign in — LibraryDesk"
+        Width="440"
+        Height="410"
+        CanResize="False"
+        WindowStartupLocation="CenterScreen">
+  <Border Padding="40" Background="#F4F6F9">
+    <StackPanel Spacing="14" VerticalAlignment="Center">
+      <TextBlock Text="LibraryDesk" FontSize="26" FontWeight="SemiBold" />
+      <TextBlock Text="Sign in to continue" FontSize="16" Foreground="#526173" Margin="0,0,0,14" />
+      <TextBlock Text="Username" />
+      <TextBox Text="{Binding Username, Mode=TwoWay}" IsEnabled="{Binding IsNotBusy}" />
+      <TextBlock Text="Password" />
+      <TextBox Text="{Binding Password, Mode=TwoWay}" PasswordChar="●" IsEnabled="{Binding IsNotBusy}" />
+      <TextBlock Text="{Binding ErrorMessage}" Foreground="#B42318" TextWrapping="Wrap" IsVisible="{Binding HasError}" />
+      <Button Content="Sign in" Command="{Binding SignInCommand}" IsEnabled="{Binding IsNotBusy}" HorizontalAlignment="Stretch" Margin="0,12,0,0" />
+    </StackPanel>
+  </Border>
+</Window>

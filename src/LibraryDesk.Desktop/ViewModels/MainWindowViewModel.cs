@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
 using LibraryDesk.Application.Abstractions;
+using LibraryDesk.Application.Authentication;
+using LibraryDesk.Domain.Security;
 
 namespace LibraryDesk.Desktop.ViewModels;
 
@@ -7,30 +9,44 @@ public sealed class MainWindowViewModel : ViewModelBase
 {
     private NavigationItemViewModel? _selectedNavigationItem;
     private PlaceholderPageViewModel _currentPage;
+    private readonly IUserSession _userSession;
 
-    public MainWindowViewModel(IClock clock)
+    public MainWindowViewModel(IClock clock, IUserSession userSession)
     {
         ArgumentNullException.ThrowIfNull(clock);
+        _userSession = userSession ?? throw new ArgumentNullException(nameof(userSession));
 
-        NavigationItems = new ObservableCollection<NavigationItemViewModel>(
-        [
-            CreateItem("Dashboard", "A concise operational overview will be added in Phase 8."),
-            CreateItem("Readers", "Reader management will be added in Phase 4."),
-            CreateItem("Books", "Books and physical copies will be added in Phase 5."),
-            CreateItem("Loans", "Borrowing and returns will be added in Phase 6."),
-            CreateItem("Overdue", "Overdue tracking will be added in Phase 7."),
-            CreateItem("Reports", "Reports will be added in Phase 9."),
-            CreateItem("Settings", "Administration and backup will be added in Phase 10."),
-        ]);
+        if (_userSession.CurrentUser is null)
+        {
+            throw new InvalidOperationException("A user must be authenticated before opening the main window.");
+        }
+
+        NavigationItems = new ObservableCollection<NavigationItemViewModel>();
+        AddItemIfAllowed(Capability.ViewDashboard, "Dashboard", "A concise operational overview will be added in Phase 8.");
+        AddItemIfAllowed(Capability.ManageReaders, "Readers", "Reader management will be added in Phase 4.");
+        AddItemIfAllowed(Capability.ManageBooks, "Books", "Books and physical copies will be added in Phase 5.");
+        AddItemIfAllowed(Capability.ManageLoans, "Loans", "Borrowing and returns will be added in Phase 6.");
+        AddItemIfAllowed(Capability.ViewOverdue, "Overdue", "Overdue tracking will be added in Phase 7.");
+        AddItemIfAllowed(Capability.ViewReports, "Reports", "Reports will be added in Phase 9.");
+        AddItemIfAllowed(Capability.ManageSettings, "Settings", "Administration and backup will be added in Phase 10.");
 
         _selectedNavigationItem = NavigationItems[0];
         _currentPage = _selectedNavigationItem.Page;
         StartedAtUtc = clock.UtcNow;
+        SignOutCommand = new RelayCommand(_ => SignOut());
     }
+
+    public event EventHandler? SignedOut;
 
     public ObservableCollection<NavigationItemViewModel> NavigationItems { get; }
 
     public DateTimeOffset StartedAtUtc { get; }
+
+    public string CurrentUserDisplayName => _userSession.CurrentUser?.DisplayName ?? string.Empty;
+
+    public string CurrentUserRole => _userSession.CurrentUser?.Role.ToString() ?? string.Empty;
+
+    public RelayCommand SignOutCommand { get; }
 
     public NavigationItemViewModel? SelectedNavigationItem
     {
@@ -52,4 +68,18 @@ public sealed class MainWindowViewModel : ViewModelBase
 
     private static NavigationItemViewModel CreateItem(string title, string description) =>
         new(title, new PlaceholderPageViewModel(title, description));
+
+    private void AddItemIfAllowed(Capability capability, string title, string description)
+    {
+        if (_userSession.HasPermission(capability))
+        {
+            NavigationItems.Add(CreateItem(title, description));
+        }
+    }
+
+    private void SignOut()
+    {
+        _userSession.Clear();
+        SignedOut?.Invoke(this, EventArgs.Empty);
+    }
 }

@@ -39,4 +39,4 @@ The desktop app applies migrations automatically during startup. In normal devel
 
 ## Current boundaries
 
-The project deliberately does not yet include credentials, readers, titles, physical copies, borrowing, reporting, backup, or synchronization. The only persistence model is the system-owned `application_metadata` table used to validate the migration pipeline. Feature pages remain transparent placeholders until their assigned phases.
+The project deliberately does not yet include readers, titles, physical copies, borrowing, reporting, backup, or synchronization. It now supports local authentication with initial-administrator setup, administrator/librarian roles, sign-in, sign-out, and capability checks. Account management beyond initial setup is deferred to Phase 10. Feature pages remain transparent placeholders until their assigned phases.
