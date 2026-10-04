@@ -1,6 +1,6 @@
 # LibraryDesk
 
-LibraryDesk is a Windows desktop application for library operations. This repository currently contains **Phase 1 — Foundation** only: a buildable Avalonia shell, clean project boundaries, configuration, dependency injection, logging, and automated-test infrastructure. No library data or workflows have been implemented yet.
+LibraryDesk is a Windows desktop application for library operations. The repository currently contains **Phases 1–2**: a buildable Avalonia shell, clean project boundaries, configuration, dependency injection, logging, and a SQLite/EF Core persistence foundation. Reader, book, copy, and loan workflows have not yet been implemented.
 
 ## Prerequisites
 
@@ -23,6 +23,8 @@ dotnet run --project src/LibraryDesk.Desktop/LibraryDesk.Desktop.csproj
 
 The application opens a desktop navigation shell. Each navigation area clearly states the later development phase in which its real functionality will be introduced.
 
+On first startup, the application applies its EF Core migrations and creates its local database at `%LocalAppData%\LibraryDesk\LibraryDesk.db`. To use a different location, set `Database:FilePath` in `appsettings.json` or define `LIBRARYDESK_Database__FilePath`.
+
 ## Project layout
 
 ```text
@@ -38,4 +40,4 @@ tests/
 docs/
 ```
 
-See [architecture documentation](docs/ARCHITECTURE.md) and [development documentation](docs/DEVELOPMENT.md) for the project conventions and Phase 1 decisions.
+See [architecture documentation](docs/ARCHITECTURE.md) and [development documentation](docs/DEVELOPMENT.md) for the project conventions, database decisions, and migration workflow.

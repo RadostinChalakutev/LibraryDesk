@@ -22,9 +22,21 @@ dotnet publish src/LibraryDesk.Desktop/LibraryDesk.Desktop.csproj --configuratio
 - Treat warnings as errors. Keep nullable annotations correct.
 - Keep business rules in Domain or Application, never in Avalonia views or code-behind.
 - Register cross-layer implementations through each layer's `Add…` extension method. The Desktop project remains the only composition root.
-- Keep database and filesystem access in Infrastructure. Phase 1 includes no persistence.
+- Keep database and filesystem access in Infrastructure. Apply all schema changes through EF Core migrations; do not call `EnsureCreated` in application code.
 - Add tests in the test project corresponding to the layer under test. Tests must not depend on the Avalonia desktop UI unless a later phase requires dedicated UI testing.
 
-## Phase 1 boundaries
+## Database migrations
 
-This phase deliberately does not include data models, a database, credentials, readers, titles, copies, borrowing, reporting, backup, or synchronization. The desktop shell is a real startable application, but all feature pages are transparent placeholders for their assigned future phase.
+The repository uses the local `dotnet-ef` tool manifest. Restore it before creating or inspecting migrations:
+
+```powershell
+dotnet tool restore
+dotnet ef migrations add MeaningfulMigrationName --project src/LibraryDesk.Infrastructure --startup-project src/LibraryDesk.Desktop --context LibraryDeskDbContext --output-dir Persistence/Migrations
+dotnet ef database update --project src/LibraryDesk.Infrastructure --startup-project src/LibraryDesk.Desktop --context LibraryDeskDbContext
+```
+
+The desktop app applies migrations automatically during startup. In normal development, use a separate configured `Database:FilePath` when you need an isolated database.
+
+## Current boundaries
+
+The project deliberately does not yet include credentials, readers, titles, physical copies, borrowing, reporting, backup, or synchronization. The only persistence model is the system-owned `application_metadata` table used to validate the migration pipeline. Feature pages remain transparent placeholders until their assigned phases.

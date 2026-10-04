@@ -39,7 +39,6 @@ internal static class DesktopBootstrapper
     public static IServiceProvider BuildServiceProvider()
     {
         var services = new ServiceCollection();
-        services.AddSingleton(Configuration.Value);
         services.AddSingleton<Serilog.ILogger>(Log.Logger);
         services.AddApplication();
         services.AddInfrastructure(Configuration.Value);
