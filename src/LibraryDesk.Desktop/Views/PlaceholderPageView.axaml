@@ -1,0 +1,13 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="LibraryDesk.Desktop.Views.PlaceholderPageView">
+  <Border Padding="28" Background="#F4F6F9" CornerRadius="8" MaxWidth="680" HorizontalAlignment="Left" VerticalAlignment="Top">
+    <StackPanel Spacing="12">
+      <TextBlock Text="{Binding Title}" FontSize="20" FontWeight="SemiBold" />
+      <TextBlock Text="{Binding Description}" FontSize="15" TextWrapping="Wrap" />
+      <TextBlock Text="This navigation area is intentionally not implemented during the foundation phase."
+                 Foreground="#526173"
+                 TextWrapping="Wrap" />
+    </StackPanel>
+  </Border>
+</UserControl>
