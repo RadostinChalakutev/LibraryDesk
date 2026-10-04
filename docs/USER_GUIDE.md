@@ -9,7 +9,7 @@ Sign in with a local staff account. Administrators see all modules, including Se
 ## Core circulation workflow
 
 1. Open **Readers** and create a reader with a unique membership number.
-2. Open **Books** and register the book title, then select it and add one physical copy per barcode.
+2. Open **Books** and register the book title, then select it and choose **Generate barcode** before adding each physical copy. The generated barcode can be scanned or entered in Loans.
 3. Open **Loans**, enter the reader membership number, copy barcode, and due date in `YYYY-MM-DD` format, then select **Borrow**.
 4. Select an active loan and choose **Return selected** when the copy is received. The copy becomes available immediately and the loan remains in history.
 
@@ -19,7 +19,7 @@ Borrowing is blocked for inactive readers, unavailable copies, invalid dates, an
 
 - **Dashboard** provides current reader, catalogue, available-copy, active-loan, and overdue counts.
 - **Overdue** lists loans whose due date has passed and calculates the days late.
-- **Reports** exports loan history for an inclusive borrowed-date range to a CSV file in Documents. It can be opened in Excel or another spreadsheet program.
+- **Reports** displays loan history for an inclusive borrowed-date range directly in the application. CSV export to Documents remains available for Excel or another spreadsheet program.
 
 ## Administration and backup
 

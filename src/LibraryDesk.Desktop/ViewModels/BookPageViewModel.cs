@@ -24,6 +24,7 @@ public sealed class BookPageViewModel : ViewModelBase
         RefreshCommand = new AsyncRelayCommand(RefreshAsync);
         AddBookCommand = new AsyncRelayCommand(AddBookAsync);
         AddCopyCommand = new AsyncRelayCommand(AddCopyAsync, () => SelectedBook is not null);
+        GenerateBarcodeCommand = new AsyncRelayCommand(GenerateBarcodeAsync, () => SelectedBook is not null);
         NewBookCommand = new RelayCommand(_ => ClearBookForm());
         RefreshCommand.Execute(null);
     }
@@ -38,6 +39,8 @@ public sealed class BookPageViewModel : ViewModelBase
 
     public AsyncRelayCommand AddCopyCommand { get; }
 
+    public AsyncRelayCommand GenerateBarcodeCommand { get; }
+
     public RelayCommand NewBookCommand { get; }
 
     public BookDto? SelectedBook
@@ -48,6 +51,7 @@ public sealed class BookPageViewModel : ViewModelBase
             if (SetProperty(ref _selectedBook, value))
             {
                 AddCopyCommand.NotifyCanExecuteChanged();
+                GenerateBarcodeCommand.NotifyCanExecuteChanged();
                 OnPropertyChanged(nameof(SelectedBookTitle));
                 _ = LoadCopiesAsync();
             }
@@ -158,6 +162,24 @@ public sealed class BookPageViewModel : ViewModelBase
         StatusMessage = "Physical copy added.";
         await LoadCopiesAsync();
         await RefreshAsync();
+    }
+
+    private async Task GenerateBarcodeAsync()
+    {
+        if (SelectedBook is null)
+        {
+            return;
+        }
+
+        var result = await _bookService.GenerateNextBarcodeAsync(SelectedBook.Id);
+        if (!result.IsSuccess || result.Value is null)
+        {
+            StatusMessage = result.Error;
+            return;
+        }
+
+        Barcode = result.Value;
+        StatusMessage = "Barcode generated. Add the physical copy to make it available for borrowing.";
     }
 
     private async Task LoadCopiesAsync()

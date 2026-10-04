@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Collections.ObjectModel;
 using LibraryDesk.Application.Reports;
 
 namespace LibraryDesk.Desktop.ViewModels;
@@ -16,8 +17,15 @@ public sealed class ReportsPageViewModel : ViewModelBase
     public ReportsPageViewModel(IReportService reportService)
     {
         _reportService = reportService ?? throw new ArgumentNullException(nameof(reportService));
+        History = new ObservableCollection<LoanHistoryReportRow>();
+        ShowHistoryCommand = new AsyncRelayCommand(ShowHistoryAsync);
         ExportLoanHistoryCommand = new AsyncRelayCommand(ExportLoanHistoryAsync);
+        ShowHistoryCommand.Execute(null);
     }
+
+    public ObservableCollection<LoanHistoryReportRow> History { get; }
+
+    public AsyncRelayCommand ShowHistoryCommand { get; }
 
     public AsyncRelayCommand ExportLoanHistoryCommand { get; }
 
@@ -41,10 +49,8 @@ public sealed class ReportsPageViewModel : ViewModelBase
 
     private async Task ExportLoanHistoryAsync()
     {
-        if (!DateOnly.TryParseExact(FromDate, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var fromDate) ||
-            !DateOnly.TryParseExact(ToDate, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var toDate))
+        if (!TryGetDateRange(out var fromDate, out var toDate))
         {
-            StatusMessage = "Dates must use YYYY-MM-DD.";
             return;
         }
 
@@ -56,5 +62,48 @@ public sealed class ReportsPageViewModel : ViewModelBase
         StatusMessage = result.IsSuccess
             ? $"Exported {result.Value?.RecordCount} record(s) to {result.Value?.FilePath}."
             : result.Error;
+    }
+
+    private async Task ShowHistoryAsync()
+    {
+        if (!TryGetDateRange(out var fromDate, out var toDate))
+        {
+            return;
+        }
+
+        var result = await _reportService.GetLoanHistoryAsync(fromDate, toDate);
+        if (!result.IsSuccess || result.Value is null)
+        {
+            StatusMessage = result.Error;
+            return;
+        }
+
+        History.Clear();
+        foreach (var row in result.Value)
+        {
+            History.Add(row);
+        }
+
+        StatusMessage = $"Showing {History.Count} loan record(s) from {fromDate:yyyy-MM-dd} to {toDate:yyyy-MM-dd}.";
+    }
+
+    private bool TryGetDateRange(out DateOnly fromDate, out DateOnly toDate)
+    {
+        fromDate = default;
+        toDate = default;
+        if (!DateOnly.TryParseExact(FromDate, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out fromDate) ||
+            !DateOnly.TryParseExact(ToDate, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out toDate))
+        {
+            StatusMessage = "Dates must use YYYY-MM-DD.";
+            return false;
+        }
+
+        if (toDate < fromDate)
+        {
+            StatusMessage = "The end date cannot be before the start date.";
+            return false;
+        }
+
+        return true;
     }
 }

@@ -24,7 +24,8 @@
       <StackPanel Spacing="6">
         <TextBlock Text="{Binding SelectedBookTitle}" FontWeight="SemiBold" />
         <StackPanel Orientation="Horizontal" Spacing="8">
-          <TextBox Width="240" Watermark="Copy barcode" Text="{Binding Barcode, Mode=TwoWay}" />
+          <TextBox Width="240" Watermark="Barcode to scan in Loans" Text="{Binding Barcode, Mode=TwoWay}" />
+          <Button Content="Generate barcode" Command="{Binding GenerateBarcodeCommand}" />
           <Button Content="Add copy" Command="{Binding AddCopyCommand}" />
         </StackPanel>
         <ListBox ItemsSource="{Binding Copies}" MaxHeight="130">

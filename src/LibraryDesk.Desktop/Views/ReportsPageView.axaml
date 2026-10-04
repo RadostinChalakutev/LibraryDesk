@@ -1,18 +1,49 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="LibraryDesk.Desktop.Views.ReportsPageView">
-  <Grid RowDefinitions="Auto,Auto,*" RowSpacing="16">
+  <Grid RowDefinitions="Auto,Auto,Auto,*" RowSpacing="16">
     <TextBlock Text="Reports" FontSize="22" FontWeight="SemiBold" />
     <Border Grid.Row="1" Padding="20" Background="#F4F6F9" CornerRadius="8">
       <Grid ColumnDefinitions="*,*,Auto" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="12" RowSpacing="8">
-        <TextBlock Grid.ColumnSpan="3" Text="Circulation history (CSV)" FontSize="18" FontWeight="SemiBold" />
+        <TextBlock Grid.ColumnSpan="3" Text="Circulation history" FontSize="18" FontWeight="SemiBold" />
         <TextBlock Grid.Row="1" Text="From (YYYY-MM-DD)" />
         <TextBlock Grid.Row="1" Grid.Column="1" Text="To (YYYY-MM-DD)" />
         <TextBox Grid.Row="2" Text="{Binding FromDate, Mode=TwoWay}" />
         <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding ToDate, Mode=TwoWay}" />
-        <Button Grid.Row="2" Grid.Column="2" Content="Export CSV" Command="{Binding ExportLoanHistoryCommand}" />
+        <StackPanel Grid.Row="2" Grid.Column="2" Orientation="Horizontal" Spacing="8">
+          <Button Content="Show in app" Command="{Binding ShowHistoryCommand}" />
+          <Button Content="Export CSV" Command="{Binding ExportLoanHistoryCommand}" />
+        </StackPanel>
       </Grid>
     </Border>
     <TextBlock Grid.Row="2" Text="{Binding StatusMessage}" Foreground="#526173" TextWrapping="Wrap" />
+    <Border Grid.Row="3" Padding="12" Background="#F4F6F9" CornerRadius="8">
+      <Grid RowDefinitions="Auto,*" RowSpacing="8">
+        <Grid ColumnDefinitions="110,110,110,*,*,160,160" Margin="4">
+          <TextBlock Text="Borrowed" FontWeight="SemiBold" />
+          <TextBlock Grid.Column="1" Text="Due" FontWeight="SemiBold" />
+          <TextBlock Grid.Column="2" Text="Returned" FontWeight="SemiBold" />
+          <TextBlock Grid.Column="3" Text="Reader" FontWeight="SemiBold" />
+          <TextBlock Grid.Column="4" Text="Book" FontWeight="SemiBold" />
+          <TextBlock Grid.Column="5" Text="Barcode" FontWeight="SemiBold" />
+          <TextBlock Grid.Column="6" Text="Author" FontWeight="SemiBold" />
+        </Grid>
+        <ListBox Grid.Row="1" ItemsSource="{Binding History}">
+          <ListBox.ItemTemplate>
+            <DataTemplate>
+              <Grid ColumnDefinitions="110,110,110,*,*,160,160" Margin="4">
+                <TextBlock Text="{Binding BorrowedOn}" />
+                <TextBlock Grid.Column="1" Text="{Binding DueOn}" />
+                <TextBlock Grid.Column="2" Text="{Binding ReturnedOn}" />
+                <TextBlock Grid.Column="3" Text="{Binding ReaderName}" />
+                <TextBlock Grid.Column="4" Text="{Binding BookTitle}" />
+                <TextBlock Grid.Column="5" Text="{Binding Barcode}" />
+                <TextBlock Grid.Column="6" Text="{Binding BookAuthor}" />
+              </Grid>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+      </Grid>
+    </Border>
   </Grid>
 </UserControl>

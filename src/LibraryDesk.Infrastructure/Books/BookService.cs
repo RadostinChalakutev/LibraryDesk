@@ -99,6 +99,32 @@ public sealed class BookService : IBookService
         return OperationResults.Success(new CopyDto(copy.Id, copy.BookId, copy.Barcode, copy.Status, copy.CreatedAtUtc));
     }
 
+    public async Task<OperationResult<string>> GenerateNextBarcodeAsync(Guid bookId, CancellationToken cancellationToken = default)
+    {
+        if (bookId == Guid.Empty)
+        {
+            return OperationResults.Failure<string>("A catalogue title must be selected.");
+        }
+
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+        if (!await dbContext.Set<Book>().AnyAsync(book => book.Id == bookId, cancellationToken))
+        {
+            return OperationResults.Failure<string>("The selected book was not found.");
+        }
+
+        var prefix = $"LD-{bookId.ToString("N")[..8].ToUpperInvariant()}-";
+        var existingBarcodes = await dbContext.Set<PhysicalCopy>()
+            .AsNoTracking()
+            .Where(copy => copy.BookId == bookId && copy.Barcode.StartsWith(prefix))
+            .Select(copy => copy.Barcode)
+            .ToListAsync(cancellationToken);
+        var highestSequence = existingBarcodes
+            .Select(barcode => int.TryParse(barcode[prefix.Length..], out var sequence) ? sequence : 0)
+            .DefaultIfEmpty()
+            .Max();
+        return OperationResults.Success($"{prefix}{highestSequence + 1:D3}");
+    }
+
     public async Task<IReadOnlyList<CopyDto>> GetCopiesAsync(Guid bookId, CancellationToken cancellationToken = default)
     {
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);

@@ -14,7 +14,7 @@ The application is built with C#/.NET 10, Avalonia UI, MVVM, EF Core, SQLite, de
 - Reader registration, search, editing, activation, and deactivation.
 - Catalogue title creation, title search, barcode-addressable physical-copy registration, and availability counts.
 - Transactional borrowing and returns, current-loan view, copy availability protection, and loan history.
-- Overdue queue, dashboard counts, and a spreadsheet-safe circulation-history CSV export.
+- Overdue queue, dashboard counts, on-screen circulation history, and a spreadsheet-safe CSV export.
 - Administrator-managed local staff accounts and consistent SQLite database backups.
 - Automatic EF Core database migrations at application startup. No default user account or sample data is created.
 

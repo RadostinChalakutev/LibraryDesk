@@ -40,6 +40,13 @@ public sealed class ReportServiceTests
             Assert.True((await books.AddCopyAsync(new AddCopyRequest(book.Id, "BC-5001"))).IsSuccess);
             Assert.True((await loans.BorrowAsync(new BorrowRequest("R-5001", "BC-5001", new DateOnly(2026, 3, 20)))).IsSuccess);
 
+            var historyResult = await services.GetRequiredService<IReportService>().GetLoanHistoryAsync(
+                new DateOnly(2026, 3, 1),
+                new DateOnly(2026, 3, 31));
+            Assert.True(historyResult.IsSuccess);
+            var displayedRow = Assert.Single(Assert.IsAssignableFrom<IReadOnlyList<LoanHistoryReportRow>>(historyResult.Value));
+            Assert.Equal("BC-5001", displayedRow.Barcode);
+
             var result = await services.GetRequiredService<IReportService>().ExportLoanHistoryCsvAsync(
                 new DateOnly(2026, 3, 1),
                 new DateOnly(2026, 3, 31),

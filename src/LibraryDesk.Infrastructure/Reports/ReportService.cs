@@ -38,7 +38,7 @@ public sealed class ReportService : IReportService
             return OperationResults.Failure<ReportExport>("A destination directory is required.");
         }
 
-        var records = await GetLoanHistoryAsync(fromDate, toDate, cancellationToken);
+        var records = await QueryLoanHistoryAsync(fromDate, toDate, cancellationToken);
         string filePath;
         try
         {
@@ -60,7 +60,21 @@ public sealed class ReportService : IReportService
         return OperationResults.Success(new ReportExport(filePath, records.Count, fromDate, toDate));
     }
 
-    private async Task<List<LoanHistoryRow>> GetLoanHistoryAsync(
+    public async Task<OperationResult<IReadOnlyList<LoanHistoryReportRow>>> GetLoanHistoryAsync(
+        DateOnly fromDate,
+        DateOnly toDate,
+        CancellationToken cancellationToken = default)
+    {
+        if (toDate < fromDate)
+        {
+            return OperationResults.Failure<IReadOnlyList<LoanHistoryReportRow>>("The end date cannot be before the start date.");
+        }
+
+        var records = await QueryLoanHistoryAsync(fromDate, toDate, cancellationToken);
+        return OperationResults.Success<IReadOnlyList<LoanHistoryReportRow>>(records);
+    }
+
+    private async Task<List<LoanHistoryReportRow>> QueryLoanHistoryAsync(
         DateOnly fromDate,
         DateOnly toDate,
         CancellationToken cancellationToken)
@@ -73,7 +87,7 @@ public sealed class ReportService : IReportService
             join copy in dbContext.Set<PhysicalCopy>().AsNoTracking() on loan.PhysicalCopyId equals copy.Id
             join book in dbContext.Set<Book>().AsNoTracking() on copy.BookId equals book.Id
             orderby loan.BorrowedOn, reader.FullName
-            select new LoanHistoryRow(
+            select new LoanHistoryReportRow(
                 loan.BorrowedOn,
                 loan.DueOn,
                 loan.ReturnedOn,
@@ -84,7 +98,7 @@ public sealed class ReportService : IReportService
                 book.Author)).ToListAsync(cancellationToken);
     }
 
-    private static async Task WriteCsvAsync(string filePath, IEnumerable<LoanHistoryRow> records, CancellationToken cancellationToken)
+    private static async Task WriteCsvAsync(string filePath, IEnumerable<LoanHistoryReportRow> records, CancellationToken cancellationToken)
     {
         await using var writer = new StreamWriter(filePath, append: false, new UTF8Encoding(encoderShouldEmitUTF8Identifier: true));
         await writer.WriteLineAsync("BorrowedOn,DueOn,ReturnedOn,MembershipNumber,ReaderName,Barcode,BookTitle,BookAuthor");
@@ -112,13 +126,4 @@ public sealed class ReportService : IReportService
         return $"\"{protectedValue.Replace("\"", "\"\"", StringComparison.Ordinal)}\"";
     }
 
-    private sealed record LoanHistoryRow(
-        DateOnly BorrowedOn,
-        DateOnly DueOn,
-        DateOnly? ReturnedOn,
-        string MembershipNumber,
-        string ReaderName,
-        string Barcode,
-        string BookTitle,
-        string BookAuthor);
 }

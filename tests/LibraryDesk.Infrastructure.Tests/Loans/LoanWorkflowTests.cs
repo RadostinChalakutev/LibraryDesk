@@ -34,6 +34,9 @@ public sealed class LoanWorkflowTests
                     new CreateReaderRequest("R-2001", "Grace Hopper", null, null))).Value);
                 var book = Assert.IsType<BookDto>((await bookService.CreateAsync(
                     new CreateBookRequest("The Compiler", "Grace Hopper", "9780000000001", "Computing", 1952))).Value);
+                var generatedBarcode = await bookService.GenerateNextBarcodeAsync(book.Id);
+                Assert.True(generatedBarcode.IsSuccess);
+                Assert.StartsWith("LD-", Assert.IsType<string>(generatedBarcode.Value));
                 var copy = Assert.IsType<CopyDto>((await bookService.AddCopyAsync(new AddCopyRequest(book.Id, "BC-2001"))).Value);
 
                 var borrowResult = await loanService.BorrowAsync(new BorrowRequest("r-2001", "bc-2001", DateOnly.FromDateTime(DateTime.UtcNow).AddDays(7)));

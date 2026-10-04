@@ -13,5 +13,7 @@ public interface IBookService
 
     Task<OperationResult<CopyDto>> AddCopyAsync(AddCopyRequest request, CancellationToken cancellationToken = default);
 
+    Task<OperationResult<string>> GenerateNextBarcodeAsync(Guid bookId, CancellationToken cancellationToken = default);
+
     Task<IReadOnlyList<CopyDto>> GetCopiesAsync(Guid bookId, CancellationToken cancellationToken = default);
 }
